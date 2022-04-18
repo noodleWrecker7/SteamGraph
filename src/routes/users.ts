@@ -1,4 +1,4 @@
-import express, { Express } from 'express'
+import express, { Express, Request } from 'express'
 import * as users from '../controllers/users'
 import { logger } from '@noodlewrecker7/logger'
 
@@ -10,12 +10,11 @@ export default (app: Express): void => {
   app.use('/users', usersRouter)
 }
 
-usersRouter.all('*', (req, res, next) => {
-  log.info('Request received /users')
-  log.debug(JSON.stringify(req.body))
+usersRouter.all('*', (req: Request, res, next) => {
+  log.info('Request received ' + req.originalUrl)
   next()
 })
 
-usersRouter.get('/:steamid', users.get)
-usersRouter.post('/', users.create)
+usersRouter.get('/:steamid/:appid', users.getAppData)
+usersRouter.post('/', users.register)
 usersRouter.delete('/:steamid', users.remove)

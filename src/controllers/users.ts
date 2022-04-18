@@ -1,40 +1,32 @@
 import { Request, Response } from 'express'
-import User from '../models/user'
-import { collections } from '../services/database.service'
+import { User } from '../models/user'
 import { logger } from '@noodlewrecker7/logger'
+import { GameEntry } from '../models/gameEntry'
 
 const log = logger.Logger
 
 /**Creates a new user entry */
-export async function create(req: Request, res: Response): Promise<void> {
-  const user: User = req.body as User
-  log.debug(JSON.stringify(user))
-  const test = await collections.users?.findOne({ steamid: user.steamid })
-  if (test) {
-    res.status(409).send('User with that steam id already exists')
-    return
+export async function register(req: Request, res: Response): Promise<void> {
+  if (req.body.steamid == null) {
+    res.status(400)
+    res.send(new Error('Missing Steam ID'))
   }
 
-  const result = await collections.users?.insertOne(user)
-
-  if (result) {
-    res.status(201).send('Succesfully added')
-  } else {
-    res.status(500).send('Failed to add')
-  }
+  User.create({ steamid: req.body.steamid }).catch((err) => {
+    log.error(err)
+  })
 }
 
 /**Gets a single user by id */
-export async function get(req: Request, res: Response) {
+export async function getAppData(req: Request, res: Response) {
   const id = req.params.steamid
+  const appid = req.params.appid
 
-  const query = { steamid: id }
-  const user = (await collections.users?.findOne(query)) as User
-  if (user) {
-    res.status(200).send(user)
-  } else {
-    res.status(404).send("Couldn't find that user.")
-  }
+  const entries: GameEntry[] = await GameEntry.findAll({
+    where: { game: appid, user: id },
+    attributes: ['createdAt', 'timePlayed']
+  })
+  res.send(entries)
 }
 
 export async function remove(req: Request, res: Response) {}

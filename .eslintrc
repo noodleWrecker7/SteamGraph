@@ -15,15 +15,7 @@
       // Means warning
       "prettier/prettier": 2,
       // Means error
-      "@typescript-eslint/ban-ts-comment": 1,
-      "require-jsdoc": ["warn", {
-        "require": {
-          "FunctionDeclaration": true,
-          "MethodDefinition": true,
-          "ClassDeclaration": true,
-          "ArrowFunctionExpression": false,
-          "FunctionExpression": false
-        }
-      }]
+      "@typescript-eslint/ban-ts-comment": 1
+      
     }
   }

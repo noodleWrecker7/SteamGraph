@@ -1,35 +1,25 @@
 // External Dependencies
-import * as mongoDB from 'mongodb'
-import dotenv from 'dotenv'
+import dotenv, { config } from 'dotenv'
+import { logger } from '@noodlewrecker7/logger'
+import uinit from '../models/user'
+import ginit, { GameEntry } from '../models/gameEntry'
+import { Sequelize, DataTypes } from 'sequelize'
+import { cfg } from '../configManager'
+import user, { User } from '../models/user'
+
+const log = logger.Logger
 
 // Global Variables
-export const collections: { games?: mongoDB.Collection; users?: mongoDB.Collection } = {}
 
-// Initialize Connection
-/** Connects to the mongo db*/
-export async function connectToDB() {
-  dotenv.config()
-  const uri = process.env.MONGO_URI
-  if (!uri) {
-    throw Error
-  }
-  const client: mongoDB.MongoClient = new mongoDB.MongoClient(uri, {
-    //@ts-ignore
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
+export const sequelize = new Sequelize('database', 'user', 'password', {
+  host: 'localhost',
+  dialect: 'sqlite',
+  logging: false,
+  storage: cfg.get('dbfile') + '.sqlite'
+})
 
-  await client.connect()
+uinit(sequelize)
+ginit(sequelize)
 
-  const db: mongoDB.Db = client.db(process.env.DB_NAME)
-
-  // @ts-ignore
-  const gameCollection: mongoDB.Collection = db.collection(process.env.GAMES_COLLECTION_NAME)
-
-  collections.games = gameCollection
-
-  // @ts-ignore
-  const usersCollection: mongoDB.Collection = db.collection(process.env.USERS_COLLECTION_NAME)
-
-  collections.users = usersCollection
-}
+GameEntry.belongsTo(User, { foreignKey: 'user' })
+User.hasMany(GameEntry)
